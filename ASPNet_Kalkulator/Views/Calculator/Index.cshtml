@@ -1,0 +1,143 @@
+﻿@{
+    ViewBag.Title = "Kalkulator";
+
+}
+<h2>Kalkulator</h2>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 offset-md-4">
+            <form action="/Calculator/Calculate" method="post">
+                <div class="form-group">
+                    <input type="text" class="form-control" name="input" id="input" placeholder="0" readonly>
+                </div>
+                <div class="btn-grid text-center w">
+                    @for (int i = 1; i <= 3; i++)
+                    {
+                        for (int j = 0; j < 3; j++)
+                        {
+                            var digit = (i - 1) * 3 + j + 1;
+                            <button type="button" class="btn btn-secondary digit btn-equal-width" data-digit="@digit">@digit</button>
+                        }
+                        if (i != 4)
+                        {
+                            char operation = '+';
+                            switch (i)
+                            {
+                                case 2:
+                                    operation = '-';
+                                    break;
+                                case 3:
+                                    operation = '*';
+                                    break;
+                                case 4:
+                                    operation = '/';
+                                    break;
+                            }
+                            <button type="button" class="btn btn-secondary operation btn-equal-width" data-operation="@operation">@operation</button>
+                        }
+                        if (i != 4)
+                        {
+                            <br />
+                        }
+                    }
+                    <button type="button" class="btn btn-secondary digit btn-equal-width" data-digit=".">.</button>
+                    <button type="button" class="btn btn-secondary digit btn-equal-width" data-digit="0">0</button>
+                    <button type="button" class="btn btn-secondary operation btn-equal-width" data-operation="C">C</button>
+                    <button type="button" class="btn btn-primary operation btn-equal-width" data-operation="=">=</button>
+                </div>
+            </form>
+            <br>
+            @if (!string.IsNullOrEmpty(ViewBag.Result))
+            {
+                <div class="alert alert-success">
+                    Wynik: @ViewBag.Result
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <div class="alert alert-danger">
+                    Błąd: @ViewBag.ErrorMessage
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var Input = "";
+        var currentInput = "";
+        var currentOperation = "";
+
+        $(".digit").click(function () {
+            var digit = $(this).data("digit");
+            if (digit === ".") {
+                if (currentInput === "")
+                    currentInput = "0.";
+                else if (!checkDots(currentInput)) {
+                    currentInput += ".";
+                }
+            }
+            else
+                currentInput += digit;
+            $("#input").val(currentInput);
+        });
+
+        $(".operation").click(function () {
+            var operation = $(this).data("operation");
+            console.log(operation);
+            if (operation === "C") {
+                Input = "";
+                currentInput = "";
+                currentOperation = "";
+                $("#input").val("");
+            } else if (operation === "=") {
+                Input = oblicz(Input, currentInput, currentOperation);
+                $("#input").val(Input);
+                currentInput = "";
+                currentOperation = "";
+            } 
+            else {
+                if (currentInput !== "") {
+                    if (Input === "") {
+                        Input = currentInput;
+                    } else {
+                        Input = oblicz(Input, currentInput, currentOperation);
+                    }
+                }
+                currentOperation = operation;
+                currentInput = "";
+                $("#input").val(Input);
+            }
+        });
+    });
+
+    function oblicz(firstInput, secondInput, operation) {
+        var result;
+        switch (operation) {
+            case "+":
+                return parseFloat(firstInput) + parseFloat(secondInput);
+            case "-":
+                return parseFloat(firstInput) - parseFloat(secondInput);
+            case "*":
+                return parseFloat(firstInput) * parseFloat(secondInput);
+            case "/":
+                if (secondInput != 0)
+                    return parseFloat(firstInput) / parseFloat(secondInput);
+                else
+                    $(".alert").val("Nie dzieli się przez 0");
+            default:
+                return firstInput;
+        }
+    }
+
+    function checkDots(input) {
+        for (var i = 0; i < input.lenght; i++) {
+            if (input.charAt(i) === ".")
+                return true;
+        }
+        return false;
+    }
+</script>
+
